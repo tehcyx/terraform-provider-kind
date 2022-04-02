@@ -4,7 +4,7 @@
 
 Perform the following steps to use the provider:
 
-1. Go to the provider [example](https://github.com/kyma-incubator/terraform-provider-kind/tree/master/example) folder:
+1. Go to the provider [example](https://github.com/tehcyx/terraform-provider-kind/tree/master/example) folder:
     ```bash
     cd example
     ```
