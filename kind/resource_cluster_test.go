@@ -42,7 +42,7 @@ func TestAccCluster(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "name", clusterName),
 					resource.TestCheckNoResourceAttr(resourceName, "node_image"),
 					resource.TestCheckResourceAttr(resourceName, "wait_for_ready", "false"),
-					resource.TestCheckNoResourceAttr(resourceName, "kind_config"),
+					resource.TestCheckNoResourceAttr(resourceName, "kind_config.#"),
 				),
 			},
 			{
@@ -53,7 +53,7 @@ func TestAccCluster(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "kubeconfig_path", "/tmp/kind-provider-test/new_file"),
 					resource.TestCheckNoResourceAttr(resourceName, "node_image"),
 					resource.TestCheckResourceAttr(resourceName, "wait_for_ready", "false"),
-					resource.TestCheckNoResourceAttr(resourceName, "kind_config"),
+					resource.TestCheckNoResourceAttr(resourceName, "kind_config.#"),
 				),
 			},
 			{
@@ -63,7 +63,7 @@ func TestAccCluster(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "name", clusterName),
 					resource.TestCheckNoResourceAttr(resourceName, "node_image"),
 					resource.TestCheckResourceAttr(resourceName, "wait_for_ready", "true"),
-					resource.TestCheckNoResourceAttr(resourceName, "kind_config"),
+					resource.TestCheckNoResourceAttr(resourceName, "kind_config.#"),
 				),
 			},
 			{
@@ -73,7 +73,7 @@ func TestAccCluster(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "name", clusterName),
 					resource.TestCheckResourceAttr(resourceName, "node_image", kindDefaults.Image),
 					resource.TestCheckResourceAttr(resourceName, "wait_for_ready", "false"),
-					resource.TestCheckNoResourceAttr(resourceName, "kind_config"),
+					resource.TestCheckNoResourceAttr(resourceName, "kind_config.#"),
 				),
 			},
 			{
@@ -83,7 +83,7 @@ func TestAccCluster(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "name", clusterName),
 					resource.TestCheckResourceAttr(resourceName, "node_image", kindDefaults.Image),
 					resource.TestCheckResourceAttr(resourceName, "wait_for_ready", "true"),
-					resource.TestCheckNoResourceAttr(resourceName, "kind_config"),
+					resource.TestCheckNoResourceAttr(resourceName, "kind_config.#"),
 				),
 			},
 			// TODO: add this for when resource update is implemented
