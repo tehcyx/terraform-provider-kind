@@ -1,0 +1,27 @@
+name: comment-pr
+
+on:
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  comment-pr:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 'Comment on PR'
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            var fs = require('fs');
+            const ev = JSON.parse(
+              fs.readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8')
+            )
+            var issue_number = ev.pull_request.number
+            await github.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue_number,
+              body: 'Thank you for the PR! A maintainer will have to add the `ok-to-test` label to run tests before this can get merged.'
+            });
