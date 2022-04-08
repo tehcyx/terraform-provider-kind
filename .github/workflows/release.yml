@@ -18,8 +18,8 @@ jobs:
         with:
           fetch-depth: 0
       -
-        name: Unshallow
-        run: git fetch --prune --unshallow
+        name: Fetch --prune
+        run: git fetch --prune
       -
         name: Set up Go
         uses: actions/setup-go@v2
