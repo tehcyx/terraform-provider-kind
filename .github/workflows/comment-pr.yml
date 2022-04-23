@@ -7,6 +7,9 @@ on:
 jobs:
   comment-pr:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: write
 
     steps:
       - name: 'Comment on PR'
