@@ -11,7 +11,7 @@ require (
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20210602131652-f16073e35f0c // indirect
 	k8s.io/client-go v12.0.0+incompatible
-	sigs.k8s.io/kind v0.13.0
+	sigs.k8s.io/kind v0.14.0
 )
 
 replace k8s.io/client-go => k8s.io/client-go v0.20.2
