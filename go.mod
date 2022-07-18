@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/hashicorp/terraform-plugin-sdk/v2 v2.18.0
+	github.com/hashicorp/terraform-plugin-sdk/v2 v2.19.0
 	github.com/json-iterator/go v1.1.11 // indirect
 	github.com/pelletier/go-toml v1.9.5
 	golang.org/x/oauth2 v0.0.0-20210402161424-2e8d93401602 // indirect
