@@ -24,7 +24,7 @@ func testSweepKindCluster(name string) error {
 	return nil
 }
 
-const nodeImage = "kindest/node:v1.23.4"
+const nodeImage = "kindest/node:v1.24.6"
 
 func TestAccCluster(t *testing.T) {
 	resourceName := "kind_cluster.test"
