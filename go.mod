@@ -6,7 +6,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.24.0
 	github.com/pelletier/go-toml v1.9.5
 	k8s.io/client-go v12.0.0+incompatible
-	sigs.k8s.io/kind v0.16.0
+	sigs.k8s.io/kind v0.17.0
 )
 
 require (
@@ -23,6 +23,7 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
+	github.com/google/safetext v0.0.0-20220905092116-b49f7bc46da2 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-checkpoint v0.5.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
