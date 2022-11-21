@@ -192,6 +192,7 @@ func TestAccClusterConfigNodes(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "kind_config.0.node.#", "2"),
 					resource.TestCheckResourceAttr(resourceName, "kind_config.0.node.0.role", "control-plane"),
 					resource.TestCheckResourceAttr(resourceName, "kind_config.0.node.1.role", "worker"),
+					resource.TestCheckResourceAttr(resourceName, "kind_config.0.node.0.labels.name", "node0"),
 				),
 			},
 			{
@@ -473,6 +474,10 @@ resource "kind_cluster" "test" {
 
 	node {
 		role = "control-plane"
+
+		labels = {
+			name = "node0"
+		}
 	}
 
 	node {
