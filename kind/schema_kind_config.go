@@ -97,6 +97,13 @@ func kindConfigNodeFields() map[string]*schema.Schema {
 				Schema: kindConfigNodeExtraPortMappingsFields(),
 			},
 		},
+		"labels": {
+			Type:     schema.TypeMap,
+			Optional: true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
 		"kubeadm_config_patches": {
 			Type:     schema.TypeList,
 			Optional: true,

@@ -66,6 +66,18 @@ func flattenKindConfigNodes(d map[string]interface{}) v1alpha4.Node {
 		}
 	}
 
+	labels := mapKeyIfExists(d, "labels")
+	if labels != nil {
+		if obj.Labels == nil {
+			obj.Labels = make(map[string]string)
+		}
+		for labelName, labelValue := range labels.(map[string]interface{}) {
+			if labelValue, ok := labelValue.(string); ok {
+				obj.Labels[labelName] = labelValue
+			}
+		}
+	}
+
 	extraPortMappings := mapKeyIfExists(d, "extra_port_mappings")
 	if extraPortMappings != nil {
 		for _, m := range extraPortMappings.([]interface{}) {
