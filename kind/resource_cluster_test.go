@@ -166,6 +166,20 @@ func TestAccClusterConfigBase(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "kind_config.0.networking.#", "1"),
 				),
 			},
+			{
+				Config: testAccClusterConfigAndRuntimeConfig(clusterName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckClusterCreate(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "name", clusterName),
+					resource.TestCheckNoResourceAttr(resourceName, "node_image"),
+					resource.TestCheckResourceAttr(resourceName, "wait_for_ready", "false"),
+					resource.TestCheckResourceAttr(resourceName, "kind_config.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "kind_config.0.kind", "Cluster"),
+					resource.TestCheckResourceAttr(resourceName, "kind_config.0.api_version", "kind.x-k8s.io/v1alpha4"),
+					resource.TestCheckResourceAttr(resourceName, "kind_config.0.runtime_config.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "kind_config.0.runtime_config.0", "api/all"),
+				),
+			},
 		},
 	})
 }
@@ -689,6 +703,23 @@ resource "kind_cluster" "test" {
 	api_version = "kind.x-k8s.io/v1alpha4"
 
 	networking {}
+  }
+}
+`, name)
+}
+
+func testAccClusterConfigAndRuntimeConfig(name string) string {
+	return fmt.Sprintf(`
+resource "kind_cluster" "test" {
+  name = "%s"
+  wait_for_ready = false
+  kind_config {
+	kind = "Cluster"
+	api_version = "kind.x-k8s.io/v1alpha4"
+
+	runtime_config {
+		"api/alpha": false
+	}
   }
 }
 `, name)
