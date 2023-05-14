@@ -53,6 +53,13 @@ func kindConfigFields() map[string]*schema.Schema {
 				},
 			},
 		},
+		"runtime_config": {
+			Type:     schema.TypeMap,
+			Optional: true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
 	}
 	return forceNewAll(s)
 }
@@ -144,6 +151,11 @@ func kindConfigNetworkingFields() map[string]*schema.Schema {
 		"kube_proxy_mode": {
 			Type:     schema.TypeString,
 			Optional: true,
+		},
+		"dns_search": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 	}
 	return s

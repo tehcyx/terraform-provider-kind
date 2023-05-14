@@ -145,6 +145,16 @@ func flattenKindConfigNetworking(d map[string]interface{}) v1alpha4.Networking {
 		obj.ServiceSubnet = serviceSubnet.(string)
 	}
 
+	dnsSearch := mapKeyIfExists(d, "dns_search")
+	if dnsSearch != nil {
+		vals := []string{}
+		for _, k := range dnsSearch.([]interface{}) {
+			data := k.(string)
+			vals = append(vals, data)
+		}
+		obj.DNSSearch = &vals
+	}
+
 	return obj
 }
 
