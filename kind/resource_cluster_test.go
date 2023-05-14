@@ -181,6 +181,21 @@ func TestAccClusterConfigBase(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "kind_config.0.runtime_config.0.api/all", "false"),
 				),
 			},
+			{
+				Config: testAccClusterConfigAndFeatureGates(clusterName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckClusterCreate(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "name", clusterName),
+					resource.TestCheckNoResourceAttr(resourceName, "node_image"),
+					resource.TestCheckResourceAttr(resourceName, "wait_for_ready", "false"),
+					resource.TestCheckResourceAttr(resourceName, "kind_config.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "kind_config.0.kind", "Cluster"),
+					resource.TestCheckResourceAttr(resourceName, "kind_config.0.api_version", "kind.x-k8s.io/v1alpha4"),
+					resource.TestCheckResourceAttr(resourceName, "kind_config.0.feature_gates.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "kind_config.0.feature_gates.0", "CSIMigration"),
+					resource.TestCheckResourceAttr(resourceName, "kind_config.0.feature_gates.0.CSIMigration", "true"),
+				),
+			},
 		},
 	})
 }
@@ -720,6 +735,23 @@ resource "kind_cluster" "test" {
 
 	runtime_config {
 		"api/alpha": "false"
+	}
+  }
+}
+`, name)
+}
+
+func testAccClusterConfigAndFeatureGates(name string) string {
+	return fmt.Sprintf(`
+resource "kind_cluster" "test" {
+  name = "%s"
+  wait_for_ready = false
+  kind_config {
+	kind = "Cluster"
+	api_version = "kind.x-k8s.io/v1alpha4"
+
+	feature_gates {
+		"CSIMigration": "true"
 	}
   }
 }

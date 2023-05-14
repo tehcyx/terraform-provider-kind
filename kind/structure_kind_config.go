@@ -1,6 +1,8 @@
 package kind
 
 import (
+	"strings"
+
 	"sigs.k8s.io/kind/pkg/apis/config/v1alpha4"
 )
 
@@ -35,6 +37,24 @@ func flattenKindConfig(d map[string]interface{}) *v1alpha4.Cluster {
 		for _, p := range containerdConfigPatches.([]interface{}) {
 			patch := p.(string)
 			obj.ContainerdConfigPatches = append(obj.ContainerdConfigPatches, patch)
+		}
+	}
+
+	runtimeConfig := mapKeyIfExists(d, "runtime_config")
+	if runtimeConfig != nil {
+		for k, v := range runtimeConfig.(map[string]string) {
+			obj.RuntimeConfig[k] = v
+		}
+	}
+
+	featureGates := mapKeyIfExists(d, "features_gates")
+	if featureGates != nil {
+		for k, v := range featureGates.(map[string]string) {
+			if strings.ToLower(v) == "true" {
+				obj.FeatureGates[k] = true
+			} else {
+				obj.FeatureGates[k] = false
+			}
 		}
 	}
 
