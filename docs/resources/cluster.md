@@ -19,10 +19,10 @@ To override the node image used:
 ```hcl
 provider "kind" {}
 
-# Create a cluster with kind of the name "test-cluster" with kubernetes version v1.16.1
+# Create a cluster with kind of the name "test-cluster" with kubernetes version v1.27.1
 resource "kind_cluster" "default" {
     name = "test-cluster"
-    node_image = "kindest/node:v1.16.1"
+    node_image = "kindest/node:v1.27.1"
 }
 ```
 
@@ -68,10 +68,10 @@ To override the default kind config:
 ```hcl
 provider "kind" {}
 
-# creating a cluster with kind of the name "test-cluster" with kubernetes version v1.18.4 and two nodes
+# creating a cluster with kind of the name "test-cluster" with kubernetes version v1.27.1 and two nodes
 resource "kind_cluster" "default" {
     name = "test-cluster"
-    node_image = "kindest/node:v1.18.4"
+    node_image = "kindest/node:v1.27.1"
     kind_config  {
         kind = "Cluster"
         api_version = "kind.x-k8s.io/v1alpha4"
@@ -92,7 +92,7 @@ provider "kind" {}
 # Create a cluster with patches applied to the containerd config
 resource "kind_cluster" "default" {
     name = "test-cluster"
-    node_image = "kindest/node:v1.23.4"
+    node_image = "kindest/node:v1.27.1"
     kind_config = {
         containerd_config_patches = [
             <<-TOML
@@ -121,7 +121,7 @@ resource "kind_cluster" "default" {
 ## Argument Reference
 
 * `name` - (Required) The kind name that is given to the created cluster.
-* `node_image` - (Optional) The node_image that kind will use (ex: kindest/node:v1.23.4).
+* `node_image` - (Optional) The node_image that kind will use (ex: kindest/node:v1.27.1).
 * `wait_for_ready` - (Optional) Defines wether or not the provider will wait for the control plane to be ready. Defaults to false.
 * `kind_config` - (Optional) The kind_config that kind will use.
 * `kubeconfig_path` - kubeconfig path set after the the cluster is created or by the user to override defaults.

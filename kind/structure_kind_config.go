@@ -42,14 +42,17 @@ func flattenKindConfig(d map[string]interface{}) *v1alpha4.Cluster {
 
 	runtimeConfig := mapKeyIfExists(d, "runtime_config")
 	if runtimeConfig != nil {
-		for k, v := range runtimeConfig.(map[string]string) {
-			obj.RuntimeConfig[k] = v
+		data := runtimeConfig.(map[string]interface{})
+		for k, v := range data {
+			k = strings.ReplaceAll(k, "_", "/") // slash is not allowed in hcl, if there's an underscore replace with slash, e.g. `api_alpha` to `api/alpha`
+			obj.RuntimeConfig[k] = v.(string)
 		}
 	}
 
 	featureGates := mapKeyIfExists(d, "features_gates")
 	if featureGates != nil {
-		for k, v := range featureGates.(map[string]string) {
+		data := featureGates.(map[string]string)
+		for k, v := range data {
 			if strings.ToLower(v) == "true" {
 				obj.FeatureGates[k] = true
 			} else {

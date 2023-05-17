@@ -24,7 +24,7 @@ func testSweepKindCluster(name string) error {
 	return nil
 }
 
-const nodeImage = "kindest/node:v1.24.6"
+const nodeImage = "kindest/node:v1.26.4@sha256:f4c0d87be03d6bea69f5e5dc0adb678bb498a190ee5c38422bf751541cebe92e"
 
 func TestAccCluster(t *testing.T) {
 	resourceName := "kind_cluster.test"
@@ -167,7 +167,7 @@ func TestAccClusterConfigBase(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccClusterConfigAndRuntimeConfig(clusterName),
+				Config: testAccClusterConfigAndExtraWithNetworkValues(clusterName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckClusterCreate(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", clusterName),
@@ -176,9 +176,24 @@ func TestAccClusterConfigBase(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "kind_config.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "kind_config.0.kind", "Cluster"),
 					resource.TestCheckResourceAttr(resourceName, "kind_config.0.api_version", "kind.x-k8s.io/v1alpha4"),
+					resource.TestCheckResourceAttr(resourceName, "kind_config.0.networking.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "kind_config.0.networking.0.api_server_address", "127.0.0.1"),
+					resource.TestCheckResourceAttr(resourceName, "kind_config.0.networking.0.api_server_port", "6443"),
+				),
+			},
+			{
+				Config: testAccClusterConfigAndRuntimeConfig(clusterName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckClusterCreate(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "name", clusterName),
+					resource.TestCheckNoResourceAttr(resourceName, "node_image"),
+					resource.TestCheckResourceAttr(resourceName, "wait_for_ready", "true"),
+					resource.TestCheckResourceAttr(resourceName, "kind_config.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "kind_config.0.kind", "Cluster"),
+					resource.TestCheckResourceAttr(resourceName, "kind_config.0.api_version", "kind.x-k8s.io/v1alpha4"),
 					resource.TestCheckResourceAttr(resourceName, "kind_config.0.runtime_config.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "kind_config.0.runtime_config.0", "api/all"),
-					resource.TestCheckResourceAttr(resourceName, "kind_config.0.runtime_config.0.api/all", "false"),
+					resource.TestCheckResourceAttr(resourceName, "kind_config.0.runtime_config.0", "api_alpha"),
+					resource.TestCheckResourceAttr(resourceName, "kind_config.0.runtime_config.0.api_alpha", "false"),
 				),
 			},
 			{
@@ -187,13 +202,13 @@ func TestAccClusterConfigBase(t *testing.T) {
 					testAccCheckClusterCreate(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", clusterName),
 					resource.TestCheckNoResourceAttr(resourceName, "node_image"),
-					resource.TestCheckResourceAttr(resourceName, "wait_for_ready", "false"),
+					resource.TestCheckResourceAttr(resourceName, "wait_for_ready", "true"),
 					resource.TestCheckResourceAttr(resourceName, "kind_config.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "kind_config.0.kind", "Cluster"),
 					resource.TestCheckResourceAttr(resourceName, "kind_config.0.api_version", "kind.x-k8s.io/v1alpha4"),
 					resource.TestCheckResourceAttr(resourceName, "kind_config.0.feature_gates.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "kind_config.0.feature_gates.0", "CSIMigration"),
-					resource.TestCheckResourceAttr(resourceName, "kind_config.0.feature_gates.0.CSIMigration", "true"),
+					resource.TestCheckResourceAttr(resourceName, "kind_config.0.feature_gates.0", "CSINodeExpandSecret"),
+					resource.TestCheckResourceAttr(resourceName, "kind_config.0.feature_gates.0.CSINodeExpandSecret", "false"),
 				),
 			},
 		},
@@ -724,7 +739,7 @@ resource "kind_cluster" "test" {
 `, name)
 }
 
-func testAccClusterConfigAndRuntimeConfig(name string) string {
+func testAccClusterConfigAndExtraWithNetworkValues(name string) string {
 	return fmt.Sprintf(`
 resource "kind_cluster" "test" {
   name = "%s"
@@ -733,8 +748,26 @@ resource "kind_cluster" "test" {
 	kind = "Cluster"
 	api_version = "kind.x-k8s.io/v1alpha4"
 
-	runtime_config {
-		"api/alpha": "false"
+	networking {
+		api_server_address = "127.0.0.1"
+		api_server_port = 6443
+	}
+  }
+}
+`, name)
+}
+
+func testAccClusterConfigAndRuntimeConfig(name string) string {
+	return fmt.Sprintf(`
+resource "kind_cluster" "test" {
+  name = "%s"
+  wait_for_ready = true
+  kind_config {
+	kind = "Cluster"
+	api_version = "kind.x-k8s.io/v1alpha4"
+
+	runtime_config = {
+		api_alpha = "false"
 	}
   }
 }
@@ -745,13 +778,13 @@ func testAccClusterConfigAndFeatureGates(name string) string {
 	return fmt.Sprintf(`
 resource "kind_cluster" "test" {
   name = "%s"
-  wait_for_ready = false
+  wait_for_ready = true
   kind_config {
 	kind = "Cluster"
 	api_version = "kind.x-k8s.io/v1alpha4"
 
-	feature_gates {
-		"CSIMigration": "true"
+	feature_gates = {
+		CSINodeExpandSecret = "false"
 	}
   }
 }

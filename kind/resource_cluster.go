@@ -33,7 +33,7 @@ func resourceCluster() *schema.Resource {
 			},
 			"node_image": {
 				Type:        schema.TypeString,
-				Description: `The node_image that kind will use (ex: kindest/node:v1.23.4).`,
+				Description: `The node_image that kind will use (ex: kindest/node:v1.26.4).`,
 				Optional:    true,
 				ForceNew:    true,
 				Computed:    true,
@@ -163,7 +163,7 @@ func resourceKindClusterRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	if _, ok := d.GetOkExists("kubeconfig_path"); !ok {
+	if _, ok := d.GetOk("kubeconfig_path"); !ok {
 		exportPath := fmt.Sprintf("%s%s%s-config", currentPath, string(os.PathSeparator), name)
 		err = provider.ExportKubeConfig(name, exportPath, false)
 		if err != nil {
