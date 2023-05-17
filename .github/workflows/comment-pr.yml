@@ -3,6 +3,7 @@ name: comment-pr
 on:
   pull_request:
     branches: [ master ]
+    types: [opened]
 
 jobs:
   comment-pr:
