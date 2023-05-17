@@ -177,8 +177,8 @@ func TestAccClusterConfigBase(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "kind_config.0.kind", "Cluster"),
 					resource.TestCheckResourceAttr(resourceName, "kind_config.0.api_version", "kind.x-k8s.io/v1alpha4"),
 					resource.TestCheckResourceAttr(resourceName, "kind_config.0.runtime_config.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "kind_config.0.runtime_config.0", "api/all"),
-					resource.TestCheckResourceAttr(resourceName, "kind_config.0.runtime_config.0.api/all", "false"),
+					resource.TestCheckResourceAttr(resourceName, "kind_config.0.runtime_config.0", "api/alpha"),
+					resource.TestCheckResourceAttr(resourceName, "kind_config.0.runtime_config.0.api/alpha", "false"),
 				),
 			},
 			{
@@ -734,7 +734,7 @@ resource "kind_cluster" "test" {
 	api_version = "kind.x-k8s.io/v1alpha4"
 
 	runtime_config {
-		"api/alpha": "false"
+		"api/alpha" = "false"
 	}
   }
 }
