@@ -54,14 +54,16 @@ func kindConfigFields() map[string]*schema.Schema {
 			},
 		},
 		"runtime_config": {
-			Type:     schema.TypeList,
+			Type:     schema.TypeMap,
 			Optional: true,
-			Elem:     &schema.Schema{Type: schema.TypeString},
+			MaxItems: 1,
+			Elem:     &schema.Schema{Type: schema.TypeMap},
 		},
 		"feature_gates": {
-			Type:     schema.TypeList,
+			Type:     schema.TypeMap,
 			Optional: true,
-			Elem:     &schema.Schema{Type: schema.TypeString},
+			MaxItems: 1,
+			Elem:     &schema.Schema{Type: schema.TypeMap},
 		},
 	}
 	return forceNewAll(s)
