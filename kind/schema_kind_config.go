@@ -56,13 +56,11 @@ func kindConfigFields() map[string]*schema.Schema {
 		"runtime_config": {
 			Type:     schema.TypeMap,
 			Optional: true,
-			MaxItems: 1,
 			Elem:     &schema.Schema{Type: schema.TypeMap},
 		},
 		"feature_gates": {
 			Type:     schema.TypeMap,
 			Optional: true,
-			MaxItems: 1,
 			Elem:     &schema.Schema{Type: schema.TypeMap},
 		},
 	}
