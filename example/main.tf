@@ -1,3 +1,12 @@
+terraform {
+  required_providers {
+    kind = {
+      source  = "tehcyx/kind"
+      version = "~> 0.0.18"
+    }
+  }
+}
+
 provider "kind" {
 }
 
@@ -14,7 +23,6 @@ resource "kind_cluster" "default" {
 
     node {
       role = "worker"
-      image = "kindest/node:v1.23.4"
     }
 
     node {
