@@ -56,18 +56,12 @@ func kindConfigFields() map[string]*schema.Schema {
 		"runtime_config": {
 			Type:     schema.TypeList,
 			Optional: true,
-			MaxItems: 1,
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			},
+			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 		"feature_gates": {
 			Type:     schema.TypeList,
 			Optional: true,
-			MaxItems: 1,
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			},
+			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 	}
 	return forceNewAll(s)
@@ -116,9 +110,7 @@ func kindConfigNodeFields() map[string]*schema.Schema {
 		"labels": {
 			Type:     schema.TypeMap,
 			Optional: true,
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			},
+			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 		"kubeadm_config_patches": {
 			Type:     schema.TypeList,

@@ -751,7 +751,7 @@ resource "kind_cluster" "test" {
 	api_version = "kind.x-k8s.io/v1alpha4"
 
 	feature_gates {
-		"CSIMigration": "true"
+		CSIMigration = "true"
 	}
   }
 }
