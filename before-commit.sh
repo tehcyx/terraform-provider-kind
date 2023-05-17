@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -o errexit -o nounset -o pipefail
 
 readonly CI_FLAG=ci
 readonly TEST_ACC_FLAG=testacc
