@@ -42,8 +42,8 @@ func flattenKindConfig(d map[string]interface{}) *v1alpha4.Cluster {
 
 	runtimeConfig := mapKeyIfExists(d, "runtime_config")
 	if runtimeConfig != nil {
-		for k, v := range runtimeConfig.(map[string]string) {
-			obj.RuntimeConfig[k] = v
+		for k, v := range runtimeConfig.(map[string]interface{}) {
+			obj.RuntimeConfig[k] = v.(string)
 		}
 	}
 
