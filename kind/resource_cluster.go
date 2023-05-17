@@ -163,7 +163,7 @@ func resourceKindClusterRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	if _, ok := d.GetOkExists("kubeconfig_path"); !ok {
+	if _, ok := d.GetOk("kubeconfig_path"); !ok {
 		exportPath := fmt.Sprintf("%s%s%s-config", currentPath, string(os.PathSeparator), name)
 		err = provider.ExportKubeConfig(name, exportPath, false)
 		if err != nil {

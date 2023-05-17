@@ -19,10 +19,10 @@ To override the node image used:
 ```hcl
 provider "kind" {}
 
-# Create a cluster with kind of the name "test-cluster" with kubernetes version v1.16.1
+# Create a cluster with kind of the name "test-cluster" with kubernetes version v1.27.1
 resource "kind_cluster" "default" {
     name = "test-cluster"
-    node_image = "kindest/node:v1.16.1"
+    node_image = "kindest/node:v1.27.1"
 }
 ```
 
@@ -68,10 +68,10 @@ To override the default kind config:
 ```hcl
 provider "kind" {}
 
-# creating a cluster with kind of the name "test-cluster" with kubernetes version v1.18.4 and two nodes
+# creating a cluster with kind of the name "test-cluster" with kubernetes version v1.27.1 and two nodes
 resource "kind_cluster" "default" {
     name = "test-cluster"
-    node_image = "kindest/node:v1.18.4"
+    node_image = "kindest/node:v1.27.1"
     kind_config  {
         kind = "Cluster"
         api_version = "kind.x-k8s.io/v1alpha4"

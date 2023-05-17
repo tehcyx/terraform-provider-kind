@@ -24,7 +24,7 @@ func testSweepKindCluster(name string) error {
 	return nil
 }
 
-const nodeImage = "kindest/node:v1.26.4"
+const nodeImage = "kindest/node:v1.26.4@sha256:f4c0d87be03d6bea69f5e5dc0adb678bb498a190ee5c38422bf751541cebe92e"
 
 func TestAccCluster(t *testing.T) {
 	resourceName := "kind_cluster.test"
@@ -192,8 +192,8 @@ func TestAccClusterConfigBase(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "kind_config.0.kind", "Cluster"),
 					resource.TestCheckResourceAttr(resourceName, "kind_config.0.api_version", "kind.x-k8s.io/v1alpha4"),
 					resource.TestCheckResourceAttr(resourceName, "kind_config.0.feature_gates.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "kind_config.0.feature_gates.0", "CSIMigration"),
-					resource.TestCheckResourceAttr(resourceName, "kind_config.0.feature_gates.0.CSIMigration", "true"),
+					resource.TestCheckResourceAttr(resourceName, "kind_config.0.feature_gates.0", "CSINodeExpandSecret"),
+					resource.TestCheckResourceAttr(resourceName, "kind_config.0.feature_gates.0.CSINodeExpandSecret", "false"),
 				),
 			},
 		},
@@ -751,7 +751,7 @@ resource "kind_cluster" "test" {
 	api_version = "kind.x-k8s.io/v1alpha4"
 
 	feature_gates {
-		CSIMigration = "true"
+		CSINodeExpandSecret = "false"
 	}
   }
 }
