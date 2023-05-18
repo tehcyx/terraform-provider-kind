@@ -49,7 +49,7 @@ func flattenKindConfig(d map[string]interface{}) *v1alpha4.Cluster {
 		}
 	}
 
-	featureGates := mapKeyIfExists(d, "features_gates")
+	featureGates := mapKeyIfExists(d, "feature_gates")
 	if featureGates != nil {
 		data := featureGates.(map[string]string)
 		for k, v := range data {
