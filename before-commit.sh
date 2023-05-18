@@ -12,7 +12,6 @@ NC='\033[0m' # No Color
 echo -e "${INVERTED}"
 echo "USER: " + $USER
 echo "PATH: " + $PATH
-echo "GOPATH:" + $GOPATH
 echo -e "${NC}"
 
 ##
