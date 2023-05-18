@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -o errexit -o nounset -o pipefail
+set -o errexit -o pipefail
 
 readonly CI_FLAG=ci
 readonly TEST_ACC_FLAG=testacc
@@ -12,6 +12,7 @@ NC='\033[0m' # No Color
 echo -e "${INVERTED}"
 echo "USER: " + $USER
 echo "PATH: " + $PATH
+echo "GOPATH:" + $GOPATH
 echo -e "${NC}"
 
 ##
