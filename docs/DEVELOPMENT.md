@@ -3,7 +3,7 @@
 ## Requirements
 
 - [Terraform](https://www.terraform.io/downloads.html) 0.12+
-- [Go](https://golang.org/doc/install) 1.13 or higher
+- [Go](https://golang.org/doc/install) 1.19 or higher
 - Make sure that your Docker Engine has enough memory assigned to run multi-node kind clusters.
 
 ## Development
