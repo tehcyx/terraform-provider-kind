@@ -172,7 +172,15 @@ func kindConfigNodeMountFields() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Optional: true,
 		},
+		"propagation": {
+			Type:     schema.TypeString,
+			Optional: true,
+		},
 		"read_only": {
+			Type:     schema.TypeBool,
+			Optional: true,
+		},
+		"selinux_relabel": {
 			Type:     schema.TypeBool,
 			Optional: true,
 		},
