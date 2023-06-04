@@ -206,9 +206,9 @@ func flattenKindConfigExtraMounts(d map[string]interface{}) v1alpha4.Mount {
 		}
 	}
 
-	readonly := mapKeyIfExists(d, "readonly")
-	if readonly != nil {
-		obj.Readonly = readonly.(bool)
+	readOnly := mapKeyIfExists(d, "read_only")
+	if readOnly != nil {
+		obj.Readonly = readOnly.(bool)
 	}
 	selinuxRelabel := mapKeyIfExists(d, "selinux_relabel")
 	if selinuxRelabel != nil {
