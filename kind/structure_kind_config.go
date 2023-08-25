@@ -157,7 +157,10 @@ func flattenKindConfigNetworking(d map[string]interface{}) v1alpha4.Networking {
 			obj.KubeProxyMode = v1alpha4.IPTablesProxyMode
 		case string(v1alpha4.IPVSProxyMode):
 			obj.KubeProxyMode = v1alpha4.IPVSProxyMode
+		case "none":
+			obj.KubeProxyMode = "none"
 		}
+
 	}
 
 	podSubnet := mapKeyIfExists(d, "pod_subnet")
