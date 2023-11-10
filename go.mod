@@ -1,6 +1,6 @@
 module github.com/tehcyx/terraform-provider-kind
 
-go 1.19
+go 1.21
 
 require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.29.0
