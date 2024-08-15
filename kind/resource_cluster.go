@@ -33,7 +33,7 @@ func resourceCluster() *schema.Resource {
 			},
 			"node_image": {
 				Type:        schema.TypeString,
-				Description: `The node_image that kind will use (ex: kindest/node:v1.26.4).`,
+				Description: `The node_image that kind will use (ex: kindest/node:v1.29.7).`,
 				Optional:    true,
 				ForceNew:    true,
 				Computed:    true,
