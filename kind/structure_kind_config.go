@@ -147,6 +147,8 @@ func flattenKindConfigNetworking(d map[string]interface{}) v1alpha4.Networking {
 			obj.IPFamily = v1alpha4.IPv4Family
 		case string(v1alpha4.IPv6Family):
 			obj.IPFamily = v1alpha4.IPv6Family
+		case string(v1alpha4.DualStackFamily):
+			obj.IPFamily = v1alpha4.DualStackFamily
 		}
 	}
 
