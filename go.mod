@@ -8,7 +8,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.37.0
 	github.com/pelletier/go-toml v1.9.5
 	k8s.io/client-go v12.0.0+incompatible
-	sigs.k8s.io/kind v0.28.0
+	sigs.k8s.io/kind v0.29.0
 )
 
 require (
