@@ -30,10 +30,14 @@ See [USAGE.md](USAGE.md) for a quick start and example workflows.
 
 - [`kind_cluster`](resources/data_source_kind_cluster.md): Retrieves information about an existing kind cluster by name.
 
-## FAQ
+## Example Usage
 
-See [FAQ.md](FAQ.md) for common questions and troubleshooting.
+```hcl
+# Configure the Kind Provider
+provider "kind" {}
 
-## Development
-
-See [DEVELOPMENT.md](DEVELOPMENT.md) for contributing, building, and testing instructions.
+# Create a cluster
+resource "kind_cluster" "default" {
+    name = "test-cluster"
+}
+```
