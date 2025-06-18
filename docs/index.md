@@ -24,7 +24,6 @@ See [USAGE.md](USAGE.md) for a quick start and example workflows.
 ## Resources
 
 - [`kind_cluster`](resources/cluster.md): Manages a kind cluster.
-- [`kind_ephemeral_cluster`](resources/ephemeral_cluster.md): Manages an ephemeral kind cluster for testing.
 
 ## Data Sources
 
