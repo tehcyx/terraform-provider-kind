@@ -2,24 +2,23 @@
 
 ## Usage
 
-Perform the following steps to use the provider:
+To use the Kind provider, add it to your Terraform configuration and initialize your workspace.
 
-1. Go to the provider [example](https://github.com/tehcyx/terraform-provider-kind/tree/master/example) folder:
-    ```bash
-    cd example
-    ```
-2. Edit the `main.tf` file and change the config as needed.
+## Example
 
+```hcl
+provider "kind" {}
 
-1. Initialize Terraform:
-    ```bash
-    terraform init
-    ```
-2. Plan the provisioning:
-    ```bash
-    terraform plan
-    ```
-3. Deploy the cluster:
-    ```bash
-    terraform apply
-    ```
+resource "kind_cluster" "default" {
+  name = "test-cluster"
+}
+```
+
+## Steps
+
+1. Add the provider and resources to your `.tf` files.
+2. Run `terraform init` to initialize the provider.
+3. Run `terraform plan` to review changes.
+4. Run `terraform apply` to create resources.
+
+See the [Resources](./resources/cluster.md) and [Data Sources](./resources/data_source_kind_cluster.md) docs for more examples and options.

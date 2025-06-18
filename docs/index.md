@@ -1,21 +1,39 @@
-# Kind Provider
+# Kind Terraform Provider
 
-The Kind provider is used to interact with [Kubernetes IN Docker
-(kind)](https://github.com/kubernetes-sigs/kind) to provision local
-[Kubernetes](https://kubernetes.io) clusters.
+The Kind Terraform provider allows you to manage [Kubernetes IN Docker (kind)](https://github.com/kubernetes-sigs/kind) clusters for local development and testing.
 
-> **Note**
-> 
-> For the `runtimeConfig` field there's special behaviour for options containing a `/` character. Since this is not allowed in HCL you can just use `_` which is internally replaced with a `/` for generating the kind config. E.g. for the option `api/alpha` you'd name the field `api_alpha` and it will set it to `api/alpha` when creating the corresponding kind config.
+## Table of Contents
 
-## Example Usage
+- [Requirements](#requirements)
+- [Usage](#usage)
+- [Resources](#resources)
+- [Data Sources](#data-sources)
+- [FAQ](FAQ.md)
+- [Development](DEVELOPMENT.md)
 
-```hcl
-# Configure the Kind Provider
-provider "kind" {}
+## Requirements
 
-# Create a cluster
-resource "kind_cluster" "default" {
-    name = "test-cluster"
-}
-```
+- [Terraform](https://www.terraform.io/downloads.html) 0.12+
+- [Go](https://golang.org/doc/install) 1.19 or higher
+- Docker Engine with sufficient resources for multi-node clusters
+
+## Usage
+
+See [USAGE.md](USAGE.md) for a quick start and example workflows.
+
+## Resources
+
+- [`kind_cluster`](resources/cluster.md): Manages a kind cluster.
+- [`kind_ephemeral_cluster`](resources/ephemeral_cluster.md): Manages an ephemeral kind cluster for testing.
+
+## Data Sources
+
+- [`kind_cluster`](resources/data_source_kind_cluster.md): Retrieves information about an existing kind cluster by name.
+
+## FAQ
+
+See [FAQ.md](FAQ.md) for common questions and troubleshooting.
+
+## Development
+
+See [DEVELOPMENT.md](DEVELOPMENT.md) for contributing, building, and testing instructions.
