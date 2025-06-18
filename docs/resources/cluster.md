@@ -118,6 +118,23 @@ resource "kind_cluster" "default" {
 }
 ```
 
+## Using kind_config_yaml
+
+You can also provide the Kind cluster configuration directly as a YAML string using the `kind_config_yaml` argument. This is useful for dynamic or inline configurations.
+
+```hcl
+resource "kind_cluster" "yaml_example" {
+  name = "yaml-cluster"
+  kind_config_yaml = <<-YAML
+    kind: Cluster
+    apiVersion: kind.x-k8s.io/v1alpha4
+    nodes:
+      - role: control-plane
+      - role: worker
+  YAML
+}
+```
+
 ## Argument Reference
 
 > **Breaking Change:** The argument `kubeconfig_path` has been renamed to `kind_config_path` to better reflect its purpose. Update your configurations accordingly.
@@ -127,6 +144,7 @@ resource "kind_cluster" "default" {
 * `wait_for_ready` - (Optional) Defines wether or not the provider will wait for the control plane to be ready. Defaults to false.
 * `kind_config` - (Optional) The kind_config that kind will use.
 * `kind_config_path` - Path to the kind config YAML manifest used to bootstrap the cluster.
+* `kind_config_yaml` - (Optional) YAML manifest as a string to bootstrap the cluster. Same format as `kind_config_path`.
 
 ## Attributes Reference
 

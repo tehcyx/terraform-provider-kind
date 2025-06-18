@@ -86,6 +86,14 @@ func TestAccCluster(t *testing.T) {
 					resource.TestCheckNoResourceAttr(resourceName, "kind_config.#"),
 				),
 			},
+			{
+				Config: testAccBasicClusterConfigWithKindConfigYaml(clusterName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckClusterCreate(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "name", clusterName),
+					resource.TestCheckResourceAttr(resourceName, "kind_config_yaml", "kind: Cluster\napiVersion: kind.x-k8s.io/v1alpha4\nnodes:\n  - role: control-plane\n  - role: worker\n"),
+				),
+			},
 			// TODO: add this for when resource update is implemented
 			// {
 			// 	ResourceName:      resourceName,
@@ -787,4 +795,23 @@ resource "kind_cluster" "test" {
   }
 }
 `, name)
+}
+
+func testAccBasicClusterConfigWithKindConfigYaml(name string) string {
+
+	yaml := `kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+  - role: control-plane
+  - role: worker
+`
+
+	return fmt.Sprintf(`
+resource "kind_cluster" "test" {
+  name = "%s"
+  kind_config_yaml = <<-YAML
+%s
+YAML
+}
+`, name, yaml)
 }

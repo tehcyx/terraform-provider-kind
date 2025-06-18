@@ -62,6 +62,12 @@ func resourceCluster() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 			},
+			"kind_config_yaml": {
+				Type:        schema.TypeString,
+				Description: `YAML manifest as a string to bootstrap the cluster. Same format as kind_config_path.`,
+				ForceNew:    true,
+				Optional:    true,
+			},
 			"kubeconfig": {
 				Type:        schema.TypeString,
 				Description: `Kubeconfig set after the the cluster is created.`,
@@ -103,10 +109,32 @@ func resourceKindClusterCreate(d *schema.ResourceData, meta interface{}) error {
 	config := d.Get("kind_config")
 	waitForReady := d.Get("wait_for_ready").(bool)
 	kindConfigPath := d.Get("kind_config_path")
+	kindConfigYaml := d.Get("kind_config_yaml")
 
 	var copts []cluster.CreateOption
+	var tempYamlPath string
 
-	if kindConfigPath != nil {
+	if kindConfigYaml != nil {
+		yaml := kindConfigYaml.(string)
+		if yaml != "" {
+			// Write YAML to a temp file
+			tmpFile, err := os.CreateTemp("", "kind-config-*.yaml")
+			if err != nil {
+				return fmt.Errorf("failed to create temp file for kind_config_yaml: %w", err)
+			}
+			defer os.Remove(tmpFile.Name())
+			_, err = tmpFile.WriteString(yaml)
+			if err != nil {
+				tmpFile.Close()
+				return fmt.Errorf("failed to write kind_config_yaml to temp file: %w", err)
+			}
+			tmpFile.Close()
+			tempYamlPath = tmpFile.Name()
+			copts = append(copts, cluster.CreateWithKubeconfigPath(tempYamlPath))
+		}
+	}
+
+	if kindConfigPath != nil && (kindConfigYaml == nil || kindConfigYaml.(string) == "") {
 		path := kindConfigPath.(string)
 		if path != "" {
 			copts = append(copts, cluster.CreateWithKubeconfigPath(path))
@@ -198,6 +226,12 @@ func resourceKindClusterDelete(d *schema.ResourceData, meta interface{}) error {
 	log.Println("Deleting local Kubernetes cluster...")
 	name := d.Get("name").(string)
 	kindConfigPath := d.Get("kind_config_path").(string)
+	kindConfigYaml := d.Get("kind_config_yaml")
+	if kindConfigYaml != nil && kindConfigYaml.(string) != "" {
+		// If a temp file was created for kind_config_yaml, remove it
+		// (No-op here, as temp file is removed in Create via defer)
+		// Optionally, you could track and remove if needed
+	}
 	provider := cluster.NewProvider(cluster.ProviderWithLogger(cmd.NewLogger()))
 
 	log.Println("=================== Deleting Kind Cluster ==================")
