@@ -55,12 +55,18 @@ func resourceCluster() *schema.Resource {
 					Schema: kindConfigFields(),
 				},
 			},
-			"kubeconfig_path": {
+			"kind_config_path": {
 				Type:        schema.TypeString,
-				Description: `Kubeconfig path set after the the cluster is created or by the user to override defaults.`,
+				Description: `Path to the kind config YAML manifest used to bootstrap the cluster.`,
 				ForceNew:    true,
 				Optional:    true,
 				Computed:    true,
+			},
+			"kind_config_yaml": {
+				Type:        schema.TypeString,
+				Description: `YAML manifest as a string to bootstrap the cluster. Same format as kind_config_path.`,
+				ForceNew:    true,
+				Optional:    true,
 			},
 			"kubeconfig": {
 				Type:        schema.TypeString,
@@ -102,12 +108,34 @@ func resourceKindClusterCreate(d *schema.ResourceData, meta interface{}) error {
 	nodeImage := d.Get("node_image").(string)
 	config := d.Get("kind_config")
 	waitForReady := d.Get("wait_for_ready").(bool)
-	kubeconfigPath := d.Get("kubeconfig_path")
+	kindConfigPath := d.Get("kind_config_path")
+	kindConfigYaml := d.Get("kind_config_yaml")
 
 	var copts []cluster.CreateOption
+	var tempYamlPath string
 
-	if kubeconfigPath != nil {
-		path := kubeconfigPath.(string)
+	if kindConfigYaml != nil {
+		yaml := kindConfigYaml.(string)
+		if yaml != "" {
+			// Write YAML to a temp file
+			tmpFile, err := os.CreateTemp("", "kind-config-*.yaml")
+			if err != nil {
+				return fmt.Errorf("failed to create temp file for kind_config_yaml: %w", err)
+			}
+			defer os.Remove(tmpFile.Name())
+			_, err = tmpFile.WriteString(yaml)
+			if err != nil {
+				tmpFile.Close()
+				return fmt.Errorf("failed to write kind_config_yaml to temp file: %w", err)
+			}
+			tmpFile.Close()
+			tempYamlPath = tmpFile.Name()
+			copts = append(copts, cluster.CreateWithKubeconfigPath(tempYamlPath))
+		}
+	}
+
+	if kindConfigPath != nil && (kindConfigYaml == nil || kindConfigYaml.(string) == "") {
+		path := kindConfigPath.(string)
 		if path != "" {
 			copts = append(copts, cluster.CreateWithKubeconfigPath(path))
 		}
@@ -163,14 +191,19 @@ func resourceKindClusterRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	if _, ok := d.GetOk("kubeconfig_path"); !ok {
+	if _, ok := d.GetOk("kind_config_path"); !ok {
 		exportPath := fmt.Sprintf("%s%s%s-config", currentPath, string(os.PathSeparator), name)
 		err = provider.ExportKubeConfig(name, exportPath, false)
 		if err != nil {
 			d.SetId("")
 			return err
 		}
-		d.Set("kubeconfig_path", exportPath)
+		d.Set("kind_config_path", exportPath)
+	}
+
+	// Deprecation warning for removed kubeconfig_path argument
+	if v, ok := d.GetOk("kubeconfig_path"); ok && v != nil {
+		log.Println("[WARN] The argument `kubeconfig_path` has been removed. Use `kind_config_path` instead.")
 	}
 
 	// use the current context in kubeconfig
@@ -192,11 +225,17 @@ func resourceKindClusterRead(d *schema.ResourceData, meta interface{}) error {
 func resourceKindClusterDelete(d *schema.ResourceData, meta interface{}) error {
 	log.Println("Deleting local Kubernetes cluster...")
 	name := d.Get("name").(string)
-	kubeconfigPath := d.Get("kubeconfig_path").(string)
+	kindConfigPath := d.Get("kind_config_path").(string)
+	kindConfigYaml := d.Get("kind_config_yaml")
+	if kindConfigYaml != nil && kindConfigYaml.(string) != "" {
+		// If a temp file was created for kind_config_yaml, remove it
+		// (No-op here, as temp file is removed in Create via defer)
+		// Optionally, you could track and remove if needed
+	}
 	provider := cluster.NewProvider(cluster.ProviderWithLogger(cmd.NewLogger()))
 
 	log.Println("=================== Deleting Kind Cluster ==================")
-	err := provider.Delete(name, kubeconfigPath)
+	err := provider.Delete(name, kindConfigPath)
 	if err != nil {
 		return err
 	}

@@ -50,7 +50,7 @@ func TestAccCluster(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckClusterCreate(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", clusterName),
-					resource.TestCheckResourceAttr(resourceName, "kubeconfig_path", "/tmp/kind-provider-test/new_file"),
+					resource.TestCheckResourceAttr(resourceName, "kind_config_path", "/tmp/kind-provider-test/new_file"),
 					resource.TestCheckNoResourceAttr(resourceName, "node_image"),
 					resource.TestCheckResourceAttr(resourceName, "wait_for_ready", "false"),
 					resource.TestCheckNoResourceAttr(resourceName, "kind_config.#"),
@@ -84,6 +84,14 @@ func TestAccCluster(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "node_image", kindDefaults.Image),
 					resource.TestCheckResourceAttr(resourceName, "wait_for_ready", "true"),
 					resource.TestCheckNoResourceAttr(resourceName, "kind_config.#"),
+				),
+			},
+			{
+				Config: testAccBasicClusterConfigWithKindConfigYaml(clusterName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckClusterCreate(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "name", clusterName),
+					resource.TestCheckResourceAttr(resourceName, "kind_config_yaml", "kind: Cluster\napiVersion: kind.x-k8s.io/v1alpha4\nnodes:\n  - role: control-plane\n  - role: worker\n"),
 				),
 			},
 			// TODO: add this for when resource update is implemented
@@ -420,7 +428,7 @@ func testAccBasicClusterConfigWithKubeconfigPath(name string) string {
 	return fmt.Sprintf(`
 resource "kind_cluster" "test" {
   name = "%s"
-  kubeconfig_path = "/tmp/kind-provider-test/new_file"
+  kind_config_path = "/tmp/kind-provider-test/new_file"
 }
 `, name)
 }
@@ -787,4 +795,23 @@ resource "kind_cluster" "test" {
   }
 }
 `, name)
+}
+
+func testAccBasicClusterConfigWithKindConfigYaml(name string) string {
+
+	yaml := `kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+  - role: control-plane
+  - role: worker
+`
+
+	return fmt.Sprintf(`
+resource "kind_cluster" "test" {
+  name = "%s"
+  kind_config_yaml = <<-YAML
+%s
+YAML
+}
+`, name, yaml)
 }
