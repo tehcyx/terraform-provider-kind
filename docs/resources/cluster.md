@@ -143,8 +143,10 @@ resource "kind_cluster" "yaml_example" {
 * `node_image` - (Optional) The node_image that kind will use (ex: kindest/node:v1.27.1).
 * `wait_for_ready` - (Optional) Defines wether or not the provider will wait for the control plane to be ready. Defaults to false.
 * `kind_config` - (Optional) The kind_config that kind will use.
-* `kind_config_path` - Path to the kind config YAML manifest used to bootstrap the cluster.
+* `kind_config_path` - (Optional) Path to the kind config YAML manifest used to bootstrap the cluster.
 * `kind_config_yaml` - (Optional) YAML manifest as a string to bootstrap the cluster. Same format as `kind_config_path`.
+
+> **Note:** Only one of `kind_config`, `kind_config_path`, or `kind_config_yaml` may be specified. If more than one is provided, the provider will return an error.
 
 ## Attributes Reference
 
