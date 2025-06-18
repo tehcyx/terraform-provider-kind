@@ -55,9 +55,9 @@ func resourceCluster() *schema.Resource {
 					Schema: kindConfigFields(),
 				},
 			},
-			"kubeconfig_path": {
+			"kind_config_path": {
 				Type:        schema.TypeString,
-				Description: `Kubeconfig path set after the the cluster is created or by the user to override defaults.`,
+				Description: `Path to the kind config YAML manifest used to bootstrap the cluster.`,
 				ForceNew:    true,
 				Optional:    true,
 				Computed:    true,
@@ -102,12 +102,12 @@ func resourceKindClusterCreate(d *schema.ResourceData, meta interface{}) error {
 	nodeImage := d.Get("node_image").(string)
 	config := d.Get("kind_config")
 	waitForReady := d.Get("wait_for_ready").(bool)
-	kubeconfigPath := d.Get("kubeconfig_path")
+	kindConfigPath := d.Get("kind_config_path")
 
 	var copts []cluster.CreateOption
 
-	if kubeconfigPath != nil {
-		path := kubeconfigPath.(string)
+	if kindConfigPath != nil {
+		path := kindConfigPath.(string)
 		if path != "" {
 			copts = append(copts, cluster.CreateWithKubeconfigPath(path))
 		}
@@ -163,14 +163,19 @@ func resourceKindClusterRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	if _, ok := d.GetOk("kubeconfig_path"); !ok {
+	if _, ok := d.GetOk("kind_config_path"); !ok {
 		exportPath := fmt.Sprintf("%s%s%s-config", currentPath, string(os.PathSeparator), name)
 		err = provider.ExportKubeConfig(name, exportPath, false)
 		if err != nil {
 			d.SetId("")
 			return err
 		}
-		d.Set("kubeconfig_path", exportPath)
+		d.Set("kind_config_path", exportPath)
+	}
+
+	// Deprecation warning for removed kubeconfig_path argument
+	if v, ok := d.GetOk("kubeconfig_path"); ok && v != nil {
+		log.Println("[WARN] The argument `kubeconfig_path` has been removed. Use `kind_config_path` instead.")
 	}
 
 	// use the current context in kubeconfig
@@ -192,11 +197,11 @@ func resourceKindClusterRead(d *schema.ResourceData, meta interface{}) error {
 func resourceKindClusterDelete(d *schema.ResourceData, meta interface{}) error {
 	log.Println("Deleting local Kubernetes cluster...")
 	name := d.Get("name").(string)
-	kubeconfigPath := d.Get("kubeconfig_path").(string)
+	kindConfigPath := d.Get("kind_config_path").(string)
 	provider := cluster.NewProvider(cluster.ProviderWithLogger(cmd.NewLogger()))
 
 	log.Println("=================== Deleting Kind Cluster ==================")
-	err := provider.Delete(name, kubeconfigPath)
+	err := provider.Delete(name, kindConfigPath)
 	if err != nil {
 		return err
 	}

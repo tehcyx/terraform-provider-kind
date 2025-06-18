@@ -113,18 +113,20 @@ locals {
 
 resource "kind_cluster" "default" {
     name = "test-cluster"
-    kubeconfig_path = local.k8s_config_path
+    kind_config_path = local.k8s_config_path
     # ...
 }
 ```
 
 ## Argument Reference
 
+> **Breaking Change:** The argument `kubeconfig_path` has been renamed to `kind_config_path` to better reflect its purpose. Update your configurations accordingly.
+
 * `name` - (Required) The kind name that is given to the created cluster.
 * `node_image` - (Optional) The node_image that kind will use (ex: kindest/node:v1.27.1).
 * `wait_for_ready` - (Optional) Defines wether or not the provider will wait for the control plane to be ready. Defaults to false.
 * `kind_config` - (Optional) The kind_config that kind will use.
-* `kubeconfig_path` - kubeconfig path set after the the cluster is created or by the user to override defaults.
+* `kind_config_path` - Path to the kind config YAML manifest used to bootstrap the cluster.
 
 ## Attributes Reference
 
