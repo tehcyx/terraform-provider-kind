@@ -20,6 +20,10 @@ func init() {
 
 func testSweepKindCluster(name string) error {
 	//TODO: needs code to cleanup test clusters
+	// prov := cluster.NewProvider()
+	// prov.Delete(name, "")
+
+	fmt.Printf("TODO: Sweeping kind cluster %q\n", name)
 
 	return nil
 }
