@@ -200,6 +200,24 @@ func resourceKindClusterDelete(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
+
+	// Remove kubeconfig context, user, and cluster
+	contextName := "kind-" + name
+	configAccess := clientcmd.NewDefaultPathOptions()
+	if kubeconfigPath != "" {
+		configAccess.LoadingRules.ExplicitPath = kubeconfigPath
+	}
+	config, err := configAccess.GetStartingConfig()
+	if err == nil {
+		delete(config.Contexts, contextName)
+		delete(config.AuthInfos, contextName)
+		delete(config.Clusters, contextName)
+		if config.CurrentContext == contextName {
+			config.CurrentContext = ""
+		}
+		clientcmd.ModifyConfig(configAccess, *config, false)
+	}
+
 	d.SetId("")
 	return nil
 }
