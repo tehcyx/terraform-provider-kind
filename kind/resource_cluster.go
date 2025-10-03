@@ -208,14 +208,18 @@ func resourceKindClusterDelete(d *schema.ResourceData, meta interface{}) error {
 		configAccess.LoadingRules.ExplicitPath = kubeconfigPath
 	}
 	config, err := configAccess.GetStartingConfig()
-	if err == nil {
+	if err != nil {
+		log.Printf("Warning: Unable to load kubeconfig for context cleanup: %v", err)
+	} else {
 		delete(config.Contexts, contextName)
 		delete(config.AuthInfos, contextName)
 		delete(config.Clusters, contextName)
 		if config.CurrentContext == contextName {
 			config.CurrentContext = ""
 		}
-		clientcmd.ModifyConfig(configAccess, *config, false)
+		if err := clientcmd.ModifyConfig(configAccess, *config, false); err != nil {
+			log.Printf("Warning: Unable to modify kubeconfig to remove context: %v", err)
+		}
 	}
 
 	d.SetId("")

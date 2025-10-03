@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	clientcmd "k8s.io/client-go/tools/clientcmd"
 	kindDefaults "sigs.k8s.io/kind/pkg/apis/config/defaults"
 	"sigs.k8s.io/kind/pkg/cluster"
 )
@@ -392,6 +393,22 @@ func testAccCheckKindClusterResourceDestroy(clusterName string) resource.TestChe
 		for _, c := range list {
 			if c == clusterName {
 				return fmt.Errorf("list cannot contain cluster of name %s", clusterName)
+			}
+		}
+
+		// Verify kubeconfig context has been removed
+		contextName := "kind-" + clusterName
+		configAccess := clientcmd.NewDefaultPathOptions()
+		config, err := configAccess.GetStartingConfig()
+		if err == nil {
+			if _, exists := config.Contexts[contextName]; exists {
+				return fmt.Errorf("kubeconfig context %s should have been removed", contextName)
+			}
+			if _, exists := config.AuthInfos[contextName]; exists {
+				return fmt.Errorf("kubeconfig user %s should have been removed", contextName)
+			}
+			if _, exists := config.Clusters[contextName]; exists {
+				return fmt.Errorf("kubeconfig cluster %s should have been removed", contextName)
 			}
 		}
 
