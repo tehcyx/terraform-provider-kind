@@ -201,15 +201,12 @@ func resourceKindClusterDelete(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	// Remove kubeconfig context, user, and cluster
+	// Remove kubeconfig context, user, and cluster from default kubeconfig
 	contextName := "kind-" + name
-	configAccess := clientcmd.NewDefaultPathOptions()
-	if kubeconfigPath != "" {
-		configAccess.LoadingRules.ExplicitPath = kubeconfigPath
-	}
-	config, err := configAccess.GetStartingConfig()
+	defaultConfigAccess := clientcmd.NewDefaultPathOptions()
+	config, err := defaultConfigAccess.GetStartingConfig()
 	if err != nil {
-		log.Printf("Warning: Unable to load kubeconfig for context cleanup: %v", err)
+		log.Printf("Warning: Unable to load default kubeconfig for context cleanup: %v", err)
 	} else {
 		delete(config.Contexts, contextName)
 		delete(config.AuthInfos, contextName)
@@ -217,8 +214,28 @@ func resourceKindClusterDelete(d *schema.ResourceData, meta interface{}) error {
 		if config.CurrentContext == contextName {
 			config.CurrentContext = ""
 		}
-		if err := clientcmd.ModifyConfig(configAccess, *config, false); err != nil {
-			log.Printf("Warning: Unable to modify kubeconfig to remove context: %v", err)
+		if err := clientcmd.ModifyConfig(defaultConfigAccess, *config, false); err != nil {
+			log.Printf("Warning: Unable to modify default kubeconfig to remove context: %v", err)
+		}
+	}
+
+	// If a custom kubeconfig path was specified, clean it up too
+	if kubeconfigPath != "" {
+		customConfigAccess := clientcmd.NewDefaultPathOptions()
+		customConfigAccess.LoadingRules.ExplicitPath = kubeconfigPath
+		customConfig, err := customConfigAccess.GetStartingConfig()
+		if err != nil {
+			log.Printf("Warning: Unable to load custom kubeconfig for context cleanup: %v", err)
+		} else {
+			delete(customConfig.Contexts, contextName)
+			delete(customConfig.AuthInfos, contextName)
+			delete(customConfig.Clusters, contextName)
+			if customConfig.CurrentContext == contextName {
+				customConfig.CurrentContext = ""
+			}
+			if err := clientcmd.ModifyConfig(customConfigAccess, *customConfig, false); err != nil {
+				log.Printf("Warning: Unable to modify custom kubeconfig to remove context: %v", err)
+			}
 		}
 	}
 
