@@ -200,6 +200,45 @@ func resourceKindClusterDelete(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
+
+	// Remove kubeconfig context, user, and cluster from default kubeconfig
+	contextName := "kind-" + name
+	defaultConfigAccess := clientcmd.NewDefaultPathOptions()
+	config, err := defaultConfigAccess.GetStartingConfig()
+	if err != nil {
+		log.Printf("Warning: Unable to load default kubeconfig for context cleanup: %v", err)
+	} else {
+		delete(config.Contexts, contextName)
+		delete(config.AuthInfos, contextName)
+		delete(config.Clusters, contextName)
+		if config.CurrentContext == contextName {
+			config.CurrentContext = ""
+		}
+		if err := clientcmd.ModifyConfig(defaultConfigAccess, *config, false); err != nil {
+			log.Printf("Warning: Unable to modify default kubeconfig to remove context: %v", err)
+		}
+	}
+
+	// If a custom kubeconfig path was specified, clean it up too
+	if kubeconfigPath != "" {
+		customConfigAccess := clientcmd.NewDefaultPathOptions()
+		customConfigAccess.LoadingRules.ExplicitPath = kubeconfigPath
+		customConfig, err := customConfigAccess.GetStartingConfig()
+		if err != nil {
+			log.Printf("Warning: Unable to load custom kubeconfig for context cleanup: %v", err)
+		} else {
+			delete(customConfig.Contexts, contextName)
+			delete(customConfig.AuthInfos, contextName)
+			delete(customConfig.Clusters, contextName)
+			if customConfig.CurrentContext == contextName {
+				customConfig.CurrentContext = ""
+			}
+			if err := clientcmd.ModifyConfig(customConfigAccess, *customConfig, false); err != nil {
+				log.Printf("Warning: Unable to modify custom kubeconfig to remove context: %v", err)
+			}
+		}
+	}
+
 	d.SetId("")
 	return nil
 }
