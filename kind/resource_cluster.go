@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	clientcmd "k8s.io/client-go/tools/clientcmd"
+	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	"sigs.k8s.io/kind/pkg/cluster"
 	"sigs.k8s.io/kind/pkg/cmd"
 )
@@ -208,14 +209,27 @@ func resourceKindClusterDelete(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		log.Printf("Warning: Unable to load default kubeconfig for context cleanup: %v", err)
 	} else {
-		delete(config.Contexts, contextName)
-		delete(config.AuthInfos, contextName)
-		delete(config.Clusters, contextName)
-		if config.CurrentContext == contextName {
-			config.CurrentContext = ""
-		}
-		if err := clientcmd.ModifyConfig(defaultConfigAccess, *config, false); err != nil {
-			log.Printf("Warning: Unable to modify default kubeconfig to remove context: %v", err)
+		// Only modify if the context exists
+		if _, exists := config.Contexts[contextName]; exists {
+			delete(config.Contexts, contextName)
+			delete(config.AuthInfos, contextName)
+			delete(config.Clusters, contextName)
+			if config.CurrentContext == contextName {
+				config.CurrentContext = ""
+			}
+			// Ensure maps are not nil before saving
+			if config.Contexts == nil {
+				config.Contexts = make(map[string]*clientcmdapi.Context)
+			}
+			if config.AuthInfos == nil {
+				config.AuthInfos = make(map[string]*clientcmdapi.AuthInfo)
+			}
+			if config.Clusters == nil {
+				config.Clusters = make(map[string]*clientcmdapi.Cluster)
+			}
+			if err := clientcmd.ModifyConfig(defaultConfigAccess, *config, false); err != nil {
+				log.Printf("Warning: Unable to modify default kubeconfig to remove context: %v", err)
+			}
 		}
 	}
 
@@ -227,14 +241,27 @@ func resourceKindClusterDelete(d *schema.ResourceData, meta interface{}) error {
 		if err != nil {
 			log.Printf("Warning: Unable to load custom kubeconfig for context cleanup: %v", err)
 		} else {
-			delete(customConfig.Contexts, contextName)
-			delete(customConfig.AuthInfos, contextName)
-			delete(customConfig.Clusters, contextName)
-			if customConfig.CurrentContext == contextName {
-				customConfig.CurrentContext = ""
-			}
-			if err := clientcmd.ModifyConfig(customConfigAccess, *customConfig, false); err != nil {
-				log.Printf("Warning: Unable to modify custom kubeconfig to remove context: %v", err)
+			// Only modify if the context exists
+			if _, exists := customConfig.Contexts[contextName]; exists {
+				delete(customConfig.Contexts, contextName)
+				delete(customConfig.AuthInfos, contextName)
+				delete(customConfig.Clusters, contextName)
+				if customConfig.CurrentContext == contextName {
+					customConfig.CurrentContext = ""
+				}
+				// Ensure maps are not nil before saving
+				if customConfig.Contexts == nil {
+					customConfig.Contexts = make(map[string]*clientcmdapi.Context)
+				}
+				if customConfig.AuthInfos == nil {
+					customConfig.AuthInfos = make(map[string]*clientcmdapi.AuthInfo)
+				}
+				if customConfig.Clusters == nil {
+					customConfig.Clusters = make(map[string]*clientcmdapi.Cluster)
+				}
+				if err := clientcmd.ModifyConfig(customConfigAccess, *customConfig, false); err != nil {
+					log.Printf("Warning: Unable to modify custom kubeconfig to remove context: %v", err)
+				}
 			}
 		}
 	}
