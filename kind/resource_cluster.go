@@ -200,6 +200,51 @@ func resourceKindClusterDelete(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
+
+	// Remove kubeconfig context, user, and cluster from default kubeconfig
+	// We need to clean up from both default and custom paths because kind updates
+	// the default kubeconfig even when a custom path is specified
+	contextName := "kind-" + name
+
+	// Helper function to safely remove context from a kubeconfig using kubectl delete-context approach
+	removeContext := func(configPath string, configType string) {
+		// Load the kubeconfig file directly
+		config, err := clientcmd.LoadFromFile(configPath)
+		if err != nil {
+			log.Printf("Warning: Unable to load %s kubeconfig for context cleanup: %v", configType, err)
+			return
+		}
+
+		// Only proceed if the context exists
+		if _, exists := config.Contexts[contextName]; !exists {
+			return
+		}
+
+		// Remove the kind context, cluster, and user
+		delete(config.Contexts, contextName)
+		delete(config.AuthInfos, contextName)
+		delete(config.Clusters, contextName)
+
+		// Reset current context if it was the deleted one
+		if config.CurrentContext == contextName {
+			config.CurrentContext = ""
+		}
+
+		// Write the updated config back directly
+		if err := clientcmd.WriteToFile(*config, configPath); err != nil {
+			log.Printf("Warning: Unable to write %s kubeconfig to remove context: %v", configType, err)
+		}
+	}
+
+	// Clean up default kubeconfig
+	defaultKubeconfigPath := clientcmd.RecommendedHomeFile
+	removeContext(defaultKubeconfigPath, "default")
+
+	// Clean up custom kubeconfig if specified
+	if kubeconfigPath != "" {
+		removeContext(kubeconfigPath, "custom")
+	}
+
 	d.SetId("")
 	return nil
 }
