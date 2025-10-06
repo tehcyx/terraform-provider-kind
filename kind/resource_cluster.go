@@ -7,7 +7,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	clientcmd "k8s.io/client-go/tools/clientcmd"
-	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	"sigs.k8s.io/kind/pkg/cluster"
 	"sigs.k8s.io/kind/pkg/cmd"
 )
@@ -203,67 +202,47 @@ func resourceKindClusterDelete(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	// Remove kubeconfig context, user, and cluster from default kubeconfig
+	// We need to clean up from both default and custom paths because kind updates
+	// the default kubeconfig even when a custom path is specified
 	contextName := "kind-" + name
-	defaultConfigAccess := clientcmd.NewDefaultPathOptions()
-	config, err := defaultConfigAccess.GetStartingConfig()
-	if err != nil {
-		log.Printf("Warning: Unable to load default kubeconfig for context cleanup: %v", err)
-	} else {
-		// Only modify if the context exists
-		if _, exists := config.Contexts[contextName]; exists {
-			delete(config.Contexts, contextName)
-			delete(config.AuthInfos, contextName)
-			delete(config.Clusters, contextName)
-			if config.CurrentContext == contextName {
-				config.CurrentContext = ""
-			}
-			// Ensure maps are not nil before saving
-			if config.Contexts == nil {
-				config.Contexts = make(map[string]*clientcmdapi.Context)
-			}
-			if config.AuthInfos == nil {
-				config.AuthInfos = make(map[string]*clientcmdapi.AuthInfo)
-			}
-			if config.Clusters == nil {
-				config.Clusters = make(map[string]*clientcmdapi.Cluster)
-			}
-			if err := clientcmd.ModifyConfig(defaultConfigAccess, *config, false); err != nil {
-				log.Printf("Warning: Unable to modify default kubeconfig to remove context: %v", err)
-			}
+
+	// Helper function to safely remove context from a kubeconfig using kubectl delete-context approach
+	removeContext := func(configPath string, configType string) {
+		// Load the kubeconfig file directly
+		config, err := clientcmd.LoadFromFile(configPath)
+		if err != nil {
+			log.Printf("Warning: Unable to load %s kubeconfig for context cleanup: %v", configType, err)
+			return
+		}
+
+		// Only proceed if the context exists
+		if _, exists := config.Contexts[contextName]; !exists {
+			return
+		}
+
+		// Remove the kind context, cluster, and user
+		delete(config.Contexts, contextName)
+		delete(config.AuthInfos, contextName)
+		delete(config.Clusters, contextName)
+
+		// Reset current context if it was the deleted one
+		if config.CurrentContext == contextName {
+			config.CurrentContext = ""
+		}
+
+		// Write the updated config back directly
+		if err := clientcmd.WriteToFile(*config, configPath); err != nil {
+			log.Printf("Warning: Unable to write %s kubeconfig to remove context: %v", configType, err)
 		}
 	}
 
-	// If a custom kubeconfig path was specified, clean it up too
+	// Clean up default kubeconfig
+	defaultKubeconfigPath := clientcmd.RecommendedHomeFile
+	removeContext(defaultKubeconfigPath, "default")
+
+	// Clean up custom kubeconfig if specified
 	if kubeconfigPath != "" {
-		customConfigAccess := clientcmd.NewDefaultPathOptions()
-		customConfigAccess.LoadingRules.ExplicitPath = kubeconfigPath
-		customConfig, err := customConfigAccess.GetStartingConfig()
-		if err != nil {
-			log.Printf("Warning: Unable to load custom kubeconfig for context cleanup: %v", err)
-		} else {
-			// Only modify if the context exists
-			if _, exists := customConfig.Contexts[contextName]; exists {
-				delete(customConfig.Contexts, contextName)
-				delete(customConfig.AuthInfos, contextName)
-				delete(customConfig.Clusters, contextName)
-				if customConfig.CurrentContext == contextName {
-					customConfig.CurrentContext = ""
-				}
-				// Ensure maps are not nil before saving
-				if customConfig.Contexts == nil {
-					customConfig.Contexts = make(map[string]*clientcmdapi.Context)
-				}
-				if customConfig.AuthInfos == nil {
-					customConfig.AuthInfos = make(map[string]*clientcmdapi.AuthInfo)
-				}
-				if customConfig.Clusters == nil {
-					customConfig.Clusters = make(map[string]*clientcmdapi.Cluster)
-				}
-				if err := clientcmd.ModifyConfig(customConfigAccess, *customConfig, false); err != nil {
-					log.Printf("Warning: Unable to modify custom kubeconfig to remove context: %v", err)
-				}
-			}
-		}
+		removeContext(kubeconfigPath, "custom")
 	}
 
 	d.SetId("")
