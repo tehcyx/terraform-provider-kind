@@ -678,8 +678,8 @@ resource "kind_cluster" "test" {
 	api_version = "kind.x-k8s.io/v1alpha4"
 	containerd_config_patches = [
 		<<-TOML
-		[plugins."io.containerd.grpc.v1.cri".registry.mirrors."localhost:5000"]
-			endpoint = ["http://kind-registry:5000"]
+		[plugins."io.containerd.grpc.v1.cri".registry]
+			config_path = "/etc/containerd/certs.d"
 		TOML
 	]
   }
@@ -697,13 +697,13 @@ resource "kind_cluster" "test" {
 	api_version = "kind.x-k8s.io/v1alpha4"
 	containerd_config_patches = [
 		<<-TOML
-		[plugins."io.containerd.grpc.v1.cri".registry.mirrors."localhost:5000"]
-			endpoint = ["http://kind-registry:5000"]
+		[plugins."io.containerd.grpc.v1.cri".registry]
+			config_path = "/etc/containerd/certs.d"
 		TOML
 		,
 		<<-TOML
-		[plugins."io.containerd.grpc.v1.cri"]
-			sandbox_image = "k8s.gcr.io/pause:3.2"
+		[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+			runtime_type = "io.containerd.runc.v2"
 		TOML
 	]
   }
@@ -726,16 +726,20 @@ resource "kind_cluster" "test" {
   [plugins."io.containerd.grpc.v1.cri"]
 
     [plugins."io.containerd.grpc.v1.cri".registry]
-
-      [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
-
-        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."localhost:5000"]
-          endpoint = ["http://kind-registry:5000"]
+      config_path = "/etc/containerd/certs.d"
 		TOML
 		,
 		<<-TOML
-		[plugins."io.containerd.grpc.v1.cri"]
-			sandbox_image = "k8s.gcr.io/pause:3.2"
+[plugins]
+
+  [plugins."io.containerd.grpc.v1.cri"]
+
+    [plugins."io.containerd.grpc.v1.cri".containerd]
+
+      [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+
+        [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+          runtime_type = "io.containerd.runc.v2"
 		TOML
 	]
   }
