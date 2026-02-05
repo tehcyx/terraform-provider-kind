@@ -2,6 +2,7 @@ package kind
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -30,6 +31,98 @@ func testSweepKindCluster(name string) error {
 }
 
 const nodeImage = "kindest/node:v1.29.7@sha256:f70ab5d833fca132a100c1f95490be25d76188b053f49a3c0047ff8812360baf"
+
+// TestRemoveKubeContext_NilExtensionMaps is a regression test for a segfault
+// during `terraform destroy`. The crash was caused by an upstream bug in
+// github.com/modern-go/reflect2 v1.0.1 (used by json-iterator/go v1.1.11):
+// UnsafeMapIterator.HasNext() dereferences a nil *hiter when
+// sortKeysMapEncoder.IsEmpty() iterates a nil map during JSON serialization.
+// When clientcmd.WriteToFile serializes a kubeconfig whose entries have nil
+// Extension/ImpersonateUserExtra maps, the nil map triggers the panic.
+// Fixed by upgrading modern-go/reflect2 to v1.0.2 and json-iterator/go to
+// v1.1.12 which properly handle nil maps.
+// See: https://github.com/modern-go/reflect2/issues/61
+func TestRemoveKubeContext_NilExtensionMaps(t *testing.T) {
+	// Write a kubeconfig YAML directly to a temp file. Entries loaded from
+	// YAML will have nil Extension maps since extensions are not present.
+	kubeconfigYAML := `apiVersion: v1
+kind: Config
+current-context: kind-test
+clusters:
+- cluster:
+    server: https://127.0.0.1:6443
+    certificate-authority-data: dGVzdA==
+  name: kind-test
+- cluster:
+    server: https://127.0.0.1:7443
+    certificate-authority-data: dGVzdA==
+  name: kind-other
+contexts:
+- context:
+    cluster: kind-test
+    user: kind-test
+  name: kind-test
+- context:
+    cluster: kind-other
+    user: kind-other
+  name: kind-other
+users:
+- name: kind-test
+  user:
+    client-certificate-data: dGVzdA==
+    client-key-data: dGVzdA==
+- name: kind-other
+  user:
+    client-certificate-data: dGVzdA==
+    client-key-data: dGVzdA==
+preferences: {}
+`
+	tmpFile, err := os.CreateTemp("", "kubeconfig-test-*.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(tmpFile.Name())
+
+	if _, err := tmpFile.WriteString(kubeconfigYAML); err != nil {
+		t.Fatal(err)
+	}
+	tmpFile.Close()
+
+	// Before the fix this panics with:
+	//   panic: runtime error: invalid memory address or nil pointer dereference
+	//   github.com/modern-go/reflect2.(*UnsafeMapIterator).HasNext
+	removeKubeContext(tmpFile.Name(), "kind-test", "test")
+
+	// Verify the context was removed and the file is still valid
+	config, err := clientcmd.LoadFromFile(tmpFile.Name())
+	if err != nil {
+		t.Fatalf("failed to reload kubeconfig: %v", err)
+	}
+
+	if _, exists := config.Contexts["kind-test"]; exists {
+		t.Error("context kind-test should have been removed")
+	}
+	if _, exists := config.Clusters["kind-test"]; exists {
+		t.Error("cluster kind-test should have been removed")
+	}
+	if _, exists := config.AuthInfos["kind-test"]; exists {
+		t.Error("user kind-test should have been removed")
+	}
+	if config.CurrentContext != "" {
+		t.Errorf("current-context should be empty, got %q", config.CurrentContext)
+	}
+
+	// Verify other entries are preserved
+	if _, exists := config.Contexts["kind-other"]; !exists {
+		t.Error("context kind-other should still exist")
+	}
+	if _, exists := config.Clusters["kind-other"]; !exists {
+		t.Error("cluster kind-other should still exist")
+	}
+	if _, exists := config.AuthInfos["kind-other"]; !exists {
+		t.Error("user kind-other should still exist")
+	}
+}
 
 func TestAccCluster(t *testing.T) {
 	resourceName := "kind_cluster.test"
