@@ -2,11 +2,14 @@ package kind
 
 import (
 	"fmt"
+	"os/exec"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
+
+const loadTestImage = "busybox:1.36"
 
 func TestResourceLoadSchema(t *testing.T) {
 	r := resourceLoad()
@@ -76,14 +79,20 @@ func TestAccLoad(t *testing.T) {
 	clusterName := acctest.RandomWithPrefix("tf-acc-load-test")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			testAccPreCheck(t)
+			// The image must exist in the local Docker daemon before kind can load it.
+			if out, err := exec.Command("docker", "pull", loadTestImage).CombinedOutput(); err != nil {
+				t.Fatalf("failed to pull test image %s: %s\n%s", loadTestImage, err, out)
+			}
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckKindClusterResourceDestroy(clusterName),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccLoadConfig(clusterName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "image", "kindest/kindnetd:v20240813-c6f155d6"),
+					resource.TestCheckResourceAttr(resourceName, "image", loadTestImage),
 					resource.TestCheckResourceAttr(resourceName, "cluster_name", clusterName),
 				),
 			},
@@ -99,8 +108,8 @@ resource "kind_cluster" "test" {
 }
 
 resource "kind_load" "test" {
-  image        = "kindest/kindnetd:v20240813-c6f155d6"
+  image        = "%s"
   cluster_name = kind_cluster.test.name
 }
-`, clusterName)
+`, clusterName, loadTestImage)
 }
