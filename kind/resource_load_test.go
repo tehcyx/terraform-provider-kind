@@ -1,7 +1,11 @@
 package kind
 
 import (
+	"fmt"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestResourceLoadSchema(t *testing.T) {
@@ -39,7 +43,7 @@ func TestResourceLoadSchema(t *testing.T) {
 	}
 }
 
-func TestResourceLoadCreate_ClusterNotFound(t *testing.T) {
+func TestResourceLoadCreate_InvalidInputs(t *testing.T) {
 	r := resourceLoad()
 	d := r.TestResourceData()
 	d.Set("image", "alpine")
@@ -65,4 +69,38 @@ func TestResourceLoadRead_ClusterGone(t *testing.T) {
 	if d.Id() != "" {
 		t.Error("ID should be cleared when cluster is gone")
 	}
+}
+
+func TestAccLoad(t *testing.T) {
+	resourceName := "kind_load.test"
+	clusterName := acctest.RandomWithPrefix("tf-acc-load-test")
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckKindClusterResourceDestroy(clusterName),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccLoadConfig(clusterName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "image", "kindest/kindnetd:v20240813-c6f155d6"),
+					resource.TestCheckResourceAttr(resourceName, "cluster_name", clusterName),
+				),
+			},
+		},
+	})
+}
+
+func testAccLoadConfig(clusterName string) string {
+	return fmt.Sprintf(`
+resource "kind_cluster" "test" {
+  name           = "%s"
+  wait_for_ready = true
+}
+
+resource "kind_load" "test" {
+  image        = "kindest/kindnetd:v20240813-c6f155d6"
+  cluster_name = kind_cluster.test.name
+}
+`, clusterName)
 }
