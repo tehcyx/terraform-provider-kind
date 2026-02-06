@@ -17,24 +17,36 @@ func TestResourceLoadSchema(t *testing.T) {
 		t.Error("Delete function should not be nil")
 	}
 
-	schema := r.Schema
-	if _, ok := schema["image"]; !ok {
+	fields := r.Schema
+	if _, ok := fields["image"]; !ok {
 		t.Error("schema should have 'image' field")
 	}
-	if _, ok := schema["cluster_name"]; !ok {
+	if _, ok := fields["cluster_name"]; !ok {
 		t.Error("schema should have 'cluster_name' field")
 	}
 
-	if !schema["image"].Required {
+	if !fields["image"].Required {
 		t.Error("'image' should be Required")
 	}
-	if !schema["image"].ForceNew {
+	if !fields["image"].ForceNew {
 		t.Error("'image' should be ForceNew")
 	}
-	if !schema["cluster_name"].Required {
+	if !fields["cluster_name"].Required {
 		t.Error("'cluster_name' should be Required")
 	}
-	if !schema["cluster_name"].ForceNew {
+	if !fields["cluster_name"].ForceNew {
 		t.Error("'cluster_name' should be ForceNew")
+	}
+}
+
+func TestResourceLoadCreate_ClusterNotFound(t *testing.T) {
+	r := resourceLoad()
+	d := r.TestResourceData()
+	d.Set("image", "alpine")
+	d.Set("cluster_name", "nonexistent-cluster-xyz")
+
+	err := resourceKindLoadCreate(d, nil)
+	if err == nil {
+		t.Fatal("expected error for nonexistent cluster")
 	}
 }
