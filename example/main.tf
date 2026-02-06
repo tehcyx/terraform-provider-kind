@@ -31,3 +31,10 @@ resource "kind_cluster" "default" {
   }
 }
 
+# Load a locally available Docker image into the cluster nodes.
+# The image must already exist in your local Docker daemon (docker build or docker pull).
+resource "kind_load" "app" {
+  image        = "myapp:latest"
+  cluster_name = kind_cluster.default.name
+}
+

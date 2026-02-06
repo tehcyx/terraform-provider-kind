@@ -16,6 +16,13 @@ provider "kind" {}
 
 # Create a cluster
 resource "kind_cluster" "default" {
-    name = "test-cluster"
+    name           = "test-cluster"
+    wait_for_ready = true
+}
+
+# Load a locally built image into the cluster
+resource "kind_load" "app" {
+    image        = "myapp:latest"
+    cluster_name = kind_cluster.default.name
 }
 ```

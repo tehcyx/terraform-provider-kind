@@ -15,13 +15,19 @@ The Terraform Provider for kind enables [Terraform](https://www.terraform.io) to
 
 ## Example Usage
 
-Copy the following code into a file with the extension `.tf` to create a kind cluster with only default values.
+Copy the following code into a file with the extension `.tf` to create a kind cluster and load a local Docker image into it.
 ```hcl
 provider "kind" {}
 
 resource "kind_cluster" "default" {
-    name = "test-cluster"
+    name           = "test-cluster"
+    wait_for_ready = true
+}
+
+resource "kind_load" "app" {
+    image        = "myapp:latest"
+    cluster_name = kind_cluster.default.name
 }
 ```
 
-Then run `terraform init`, `terraform plan` & `terraform apply` and follow the on screen instructions. For more details on how to influence creation of the kind resource check out the Quick Start section above.
+Then run `terraform init`, `terraform plan` & `terraform apply` and follow the on-screen instructions. For more details check out the Quick Start section above.
