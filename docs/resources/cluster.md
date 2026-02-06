@@ -122,9 +122,9 @@ resource "kind_cluster" "default" {
 
 * `name` - (Required) The kind name that is given to the created cluster.
 * `node_image` - (Optional) The node_image that kind will use (ex: kindest/node:v1.27.1).
-* `wait_for_ready` - (Optional) Defines wether or not the provider will wait for the control plane to be ready. Defaults to false.
+* `wait_for_ready` - (Optional) Defines whether the provider will wait for the control plane to be ready. Defaults to false.
 * `kind_config` - (Optional) The kind_config that kind will use.
-* `kubeconfig_path` - kubeconfig path set after the the cluster is created or by the user to override defaults.
+* `kubeconfig_path` - kubeconfig path set after the cluster is created or by the user to override defaults.
 
 ## Attributes Reference
 

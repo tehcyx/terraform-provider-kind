@@ -9,17 +9,15 @@ Perform the following steps to use the provider:
     cd example
     ```
 2. Edit the `main.tf` file and change the config as needed.
-
-
-1. Initialize Terraform:
+3. Initialize Terraform:
     ```bash
     terraform init
     ```
-2. Plan the provisioning:
+4. Plan the provisioning:
     ```bash
     terraform plan
     ```
-3. Deploy the cluster:
+5. Deploy the cluster:
     ```bash
     terraform apply
     ```
