@@ -110,7 +110,31 @@ func dockerImageID(imageName string) (string, error) {
 }
 
 func resourceKindLoadRead(d *schema.ResourceData, meta interface{}) error {
-	return fmt.Errorf("not implemented")
+	imageName := d.Get("image").(string)
+	clusterName := d.Get("cluster_name").(string)
+
+	provider := cluster.NewProvider(cluster.ProviderWithLogger(cmd.NewLogger()))
+
+	// Check if the cluster still exists
+	nodeList, err := provider.ListInternalNodes(clusterName)
+	if err != nil || len(nodeList) == 0 {
+		log.Printf("Cluster %q not found or has no nodes, removing kind_load from state", clusterName)
+		d.SetId("")
+		return nil
+	}
+
+	// Check if the image is present on at least one node
+	for _, node := range nodeList {
+		id, err := nodeutils.ImageID(node, imageName)
+		if err == nil && id != "" {
+			return nil
+		}
+	}
+
+	// Image not found on any node
+	log.Printf("Image %q not found on any node in cluster %q, removing from state", imageName, clusterName)
+	d.SetId("")
+	return nil
 }
 
 func resourceKindLoadDelete(d *schema.ResourceData, meta interface{}) error {

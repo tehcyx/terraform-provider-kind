@@ -50,3 +50,19 @@ func TestResourceLoadCreate_ClusterNotFound(t *testing.T) {
 		t.Fatal("expected error for nonexistent cluster")
 	}
 }
+
+func TestResourceLoadRead_ClusterGone(t *testing.T) {
+	r := resourceLoad()
+	d := r.TestResourceData()
+	d.SetId("nonexistent-cluster|sha256:abc123")
+	d.Set("image", "alpine")
+	d.Set("cluster_name", "nonexistent-cluster")
+
+	err := resourceKindLoadRead(d, nil)
+	if err != nil {
+		t.Fatalf("Read should not error when cluster is gone, got: %v", err)
+	}
+	if d.Id() != "" {
+		t.Error("ID should be cleared when cluster is gone")
+	}
+}
