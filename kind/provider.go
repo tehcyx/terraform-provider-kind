@@ -16,6 +16,7 @@ func Provider() *schema.Provider {
 	return &schema.Provider{
 		ResourcesMap: map[string]*schema.Resource{
 			"kind_cluster": resourceCluster(),
+			"kind_load":    resourceLoad(),
 		},
 	}
 }
