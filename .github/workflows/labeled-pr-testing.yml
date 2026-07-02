@@ -19,6 +19,9 @@ jobs:
     - uses: actions/setup-go@v6
       with:
         go-version-file: go.mod
-    
+    - uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_wrapper: false
+
     - name: Run tests
       run: make testacc
