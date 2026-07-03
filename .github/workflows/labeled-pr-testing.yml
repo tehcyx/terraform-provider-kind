@@ -19,7 +19,7 @@ jobs:
     - uses: actions/setup-go@v6
       with:
         go-version-file: go.mod
-    - uses: hashicorp/setup-terraform@v3
+    - uses: hashicorp/setup-terraform@v4
       with:
         terraform_wrapper: false
 
