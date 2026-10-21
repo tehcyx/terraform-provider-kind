@@ -124,6 +124,25 @@ preferences: {}
 	}
 }
 
+func TestAccClusterContextName(t *testing.T) {
+	resourceName := "kind_cluster.test"
+	clusterName := acctest.RandomWithPrefix("tf-acc-context")
+	check := resource.ComposeTestCheckFunc(
+		testAccCheckClusterCreate(resourceName),
+		resource.TestCheckResourceAttr(resourceName, "context_name", "kind-"+clusterName),
+	)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckKindClusterResourceDestroy(clusterName),
+		Steps: []resource.TestStep{
+			{Config: testAccBasicClusterConfig(clusterName), Check: check},
+			{RefreshState: true, Check: check},
+		},
+	})
+}
+
 func TestAccCluster(t *testing.T) {
 	resourceName := "kind_cluster.test"
 	clusterName := acctest.RandomWithPrefix("tf-acc-cluster-test")
@@ -511,9 +530,17 @@ func testAccCheckKindClusterResourceDestroy(clusterName string) resource.TestChe
 
 func testAccCheckClusterCreate(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		_, ok := s.RootModule().Resources[name]
+		rs, ok := s.RootModule().Resources[name]
 		if !ok {
 			return fmt.Errorf("root module has no resource called %s", name)
+		}
+		config, err := clientcmd.Load([]byte(rs.Primary.Attributes["kubeconfig"]))
+		if err != nil {
+			return err
+		}
+		contextName := rs.Primary.Attributes["context_name"]
+		if contextName != "kind-"+rs.Primary.Attributes["name"] || contextName != config.CurrentContext || config.Contexts[contextName] == nil {
+			return fmt.Errorf("context_name %q does not match the Kind cluster kubeconfig", contextName)
 		}
 
 		return nil
