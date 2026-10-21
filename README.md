@@ -7,6 +7,7 @@ The Terraform Provider for kind enables [Terraform](https://www.terraform.io) to
 
 ## Quick Starts
 - [Using the provider](./docs/USAGE.md)
+- [Create several clusters in one apply](./example/multi-cluster/README.md)
 - [Provider development](./docs/DEVELOPMENT.md)
 
 > **Note**

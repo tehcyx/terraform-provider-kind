@@ -1,0 +1,3 @@
+# Generated cluster credentials and local provider selection.
+kubeconfig-*
+.terraform.lock.hcl
