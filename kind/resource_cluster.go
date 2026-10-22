@@ -67,6 +67,11 @@ func resourceCluster() *schema.Resource {
 				Description: `Kubeconfig set after the the cluster is created.`,
 				Computed:    true,
 			},
+			"context_name": {
+				Type:        schema.TypeString,
+				Description: `The current context name in the cluster kubeconfig (normally kind-<cluster name>).`,
+				Computed:    true,
+			},
 			"client_certificate": {
 				Type:        schema.TypeString,
 				Description: `Client certificate for authenticating to cluster.`,
@@ -144,9 +149,18 @@ func resourceKindClusterCreate(d *schema.ResourceData, meta interface{}) error {
 	return resourceKindClusterRead(d, meta)
 }
 
+type clusterKubeconfigReader interface {
+	KubeConfig(name string, internal bool) (string, error)
+	ExportKubeConfig(name, path string, internal bool) error
+}
+
 func resourceKindClusterRead(d *schema.ResourceData, meta interface{}) error {
-	name := d.Get("name").(string)
 	provider := cluster.NewProvider(cluster.ProviderWithLogger(cmd.NewLogger()))
+	return resourceKindClusterReadWithProvider(d, provider)
+}
+
+func resourceKindClusterReadWithProvider(d *schema.ResourceData, provider clusterKubeconfigReader) error {
+	name := d.Get("name").(string)
 	id := d.Id()
 	log.Printf("ID: %s\n", id)
 
@@ -173,9 +187,20 @@ func resourceKindClusterRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set("kubeconfig_path", exportPath)
 	}
 
-	// use the current context in kubeconfig
-	config, err := clientcmd.RESTConfigFromKubeConfig([]byte(kconfig))
+	// Use the same current context for its name, endpoint, and credentials.
+	clientConfig, err := clientcmd.NewClientConfigFromBytes([]byte(kconfig))
 	if err != nil {
+		return err
+	}
+	config, err := clientConfig.ClientConfig()
+	if err != nil {
+		return err
+	}
+	kubeconfig, err := clientConfig.RawConfig()
+	if err != nil {
+		return err
+	}
+	if err := d.Set("context_name", kubeconfig.CurrentContext); err != nil {
 		return err
 	}
 

@@ -14,6 +14,16 @@ resource "kind_cluster" "default" {
 }
 ```
 
+Use `context_name` directly instead of parsing the kubeconfig:
+
+```hcl
+output "cluster_context" {
+    value = kind_cluster.default.context_name
+}
+```
+
+For the cluster above, this outputs `kind-test-cluster`.
+
 To override the node image used:
 
 ```hcl
@@ -132,6 +142,7 @@ In addition to the arguments listed above, the following computed attributes are
 exported:
 
 * `kubeconfig` - The kubeconfig for the cluster after it is created
+* `context_name` - The current context name in the cluster kubeconfig, normally `kind-<cluster name>`. Populated on create and refresh, including for existing resources.
 * `client_certificate` - Client certificate for authenticating to cluster.
 * `client_key` - Client key for authenticating to cluster.
 * `cluster_ca_certificate` - Client verifies the server certificate with this CA cert.
