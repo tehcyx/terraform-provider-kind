@@ -3,6 +3,8 @@
 Provides a Kind cluster resource. This can be used to create and delete Kind
 clusters. It does NOT support modification to an existing kind cluster.
 
+To create several clusters in one apply, use Terraform's `for_each` or `count` with unique names, kubeconfig paths, and mapped host ports. See the [multi-cluster example](../../example/multi-cluster/README.md) for a complete configuration and lifecycle and networking details.
+
 ## Example Usage
 
 ```hcl
